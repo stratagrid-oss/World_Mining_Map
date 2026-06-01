@@ -1,10 +1,10 @@
 const STATUS_COLORS = {
-  Producer: "#3cb371",
-  "Past Producer": "#4a8ed4",
-  Prospect: "#d4a53c",
-  Occurrence: "#9b9a97",
-  Plant: "#9b6ed4",
-  Unknown: "#d4534a",
+  Producer: "#B45309",
+  "Past Producer": "#2563EB",
+  Prospect: "#C2B280",
+  Occurrence: "#F8FAFC",
+  Plant: "#111827",
+  Unknown: "#B45309",
 };
 
 let map;
@@ -46,7 +46,7 @@ function hideLoading() {
 function showLoadingError(message) {
   const loading = document.getElementById("loading");
   if (!loading) return;
-  loading.innerHTML = `<h2 style="color:#d4534a">Error</h2><p>${escapeHtml(message)}</p>`;
+  loading.innerHTML = `<h2 style="color:#B45309">Error</h2><p>${escapeHtml(message)}</p>`;
 }
 
 function escapeHtml(value) {
@@ -60,8 +60,16 @@ function escapeHtml(value) {
 }
 
 function getColor(statusIndex) {
-  if (!dictionaryData || statusIndex < 0) return "#9b9a97";
-  return STATUS_COLORS[dictionaryData.statuses[statusIndex]] || "#9b9a97";
+  if (!dictionaryData || statusIndex < 0) return "#C2B280";
+  return STATUS_COLORS[dictionaryData.statuses[statusIndex]] || "#C2B280";
+}
+
+function getStrokeColor(statusIndex) {
+  if (!dictionaryData || statusIndex < 0) return "#111827";
+  const status = dictionaryData.statuses[statusIndex];
+  if (status === "Plant") return "#C2B280";
+  if (status === "Unknown") return "#F8FAFC";
+  return "#111827";
 }
 
 function populateSelect(selectId, items, defaultLabel) {
@@ -120,7 +128,7 @@ function renderItems(items) {
     const marker = L.circleMarker([item.lat, item.lng], {
       radius: 5,
       fillColor: getColor(item.record[4]),
-      color: "#0f1117",
+      color: getStrokeColor(item.record[4]),
       weight: 1,
       fillOpacity: 0.85,
     });
@@ -166,10 +174,15 @@ function initMap() {
     maxBoundsViscosity: 0.8,
   });
 
+  const darkGrid = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution: "&copy; OpenStreetMap &copy; CARTO | Data: USGS MRDS",
+    maxZoom: 19,
+  }).addTo(map);
+
   const streets = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap | Data: USGS MRDS",
     maxZoom: 19,
-  }).addTo(map);
+  });
 
   const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenTopoMap | Data: USGS MRDS",
@@ -182,6 +195,7 @@ function initMap() {
   });
 
   L.control.layers({
+    "Dark Grid": darkGrid,
     "Street Map": streets,
     Topographic: topo,
     Satellite: satellite,
